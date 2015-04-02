@@ -225,6 +225,7 @@ class cfs_file extends cfs_field
                     cfs_media_frame.open();
 
                     // Hide media menu and reposition the rest
+                    $('.media-modal-content .media-frame-menu').hide();
                     $('.media-modal-content .media-menu').hide();
                     $('.media-modal-content .media-frame-title').css('left', '0px');
                     $('.media-modal-content .media-frame-router').css('left', '0px');
