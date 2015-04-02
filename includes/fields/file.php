@@ -200,10 +200,11 @@ class cfs_file extends cfs_field
                     }
 
                     cfs_media_frame = wp.media.frames.cfs_media_frame = wp.media({
-                        multiple: false
+                        multiple: false,
+                        frame: 'post' // Use 'post' in order to display all media filters
                     });
 
-                    cfs_media_frame.on('select', function() {
+                    cfs_media_frame.on('insert', function() {
                         var attachment = cfs_media_frame.state().get('selection').first().toJSON();
                         if ('image' == attachment.type && 'undefined' != typeof attachment.sizes) {
                             file_url = attachment.sizes.full.url;
@@ -222,6 +223,13 @@ class cfs_file extends cfs_field
                     });
 
                     cfs_media_frame.open();
+
+                    // Hide media menu and reposition the rest
+                    $('.media-modal-content .media-menu').hide();
+                    $('.media-modal-content .media-frame-title').css('left', '0px');
+                    $('.media-modal-content .media-frame-router').css('left', '0px');
+                    $('.media-modal-content .media-frame-content').css('left', '0px');
+
                     cfs_media_frame.content.mode('upload');
                 });
 
