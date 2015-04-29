@@ -199,6 +199,21 @@ class Custom_Field_Suite
      * @since 1.0.0
      */
     function get( $field_name = false, $post_id = false, $options = array() ) {
+        $preview = isset( $_GET['preview'] );
+        if ( $preview ) {
+            if ( false === wp_is_post_revision( $post_id ) ) {
+
+                $revisions = wp_get_post_revisions( $post_id, array( 'orderby' => 'ID', 'order' => 'ASC', ) );
+                foreach ( $revisions as $revision ) {
+                    if ( false === stripos( $revision->post_name, 'autosave' ) ) {
+                        $preview_id = $revision->ID;
+                        break;
+                    }
+                }
+            }
+        }
+        $post_id = ( isset( $preview_id ) ) ? $preview_id : $post_id;
+
         if ( false !== $field_name ) {
             return $this->api->get_field( $field_name, $post_id, $options );
         }
@@ -240,6 +255,22 @@ class Custom_Field_Suite
      * @since 1.1.4
      */
     function save( $field_data = array(), $post_data = array(), $options = array() ) {
+        $preview = isset( $_POST['wp-preview'] ) && $_POST['wp-preview'] == 'dopreview';
+        if ( $preview ) {
+            if ( isset( $post_data['ID'] ) ) {
+                if ( false === wp_is_post_revision( $post_data['ID'] ) ) {
+                    $revisions = wp_get_post_revisions( $post_data['ID'], array( 'orderby' => 'ID', 'order' => 'ASC', ) );
+                    foreach ( $revisions as $revision ) {
+                        if ( false === strpos( $revision->post_name, 'autosave' ) ) {
+                            $this->api->save_fields( $field_data, array( 'ID' => $revision->ID, ), $options );
+                            return $post_data['ID'];
+                        }
+                    }
+                } else {
+                    return $post_data['ID'];
+                }
+            }
+        }
         return $this->api->save_fields( $field_data, $post_data, $options );
     }
 
@@ -488,6 +519,24 @@ class Custom_Field_Suite
      */
     function parse_query( $wp_query ) {
         $wp_query->query_vars['cfs'] = $this;
+    }
+
+    function get_post_or_revision_id( $post_id ) {
+        $preview = isset( $_GET['preview'] );
+        if ( $preview ) {
+            if ( false === wp_is_post_revision( $post_id ) ) {
+
+                $revisions = wp_get_post_revisions( $post_id, array( 'orderby' => 'ID', 'order' => 'ASC', ) );
+                foreach ( $revisions as $revision ) {
+                    if ( false === stripos( $revision->post_name, 'autosave' ) ) {
+                        $preview_id = $revision->ID;
+                        break;
+                    }
+                }
+            }
+        }
+        $post_id = ( isset( $preview_id ) ) ? $preview_id : $post_id;
+
     }
 }
 
